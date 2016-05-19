@@ -1,0 +1,44 @@
+#! /usr/bin/python
+# -*-  coding: utf-8 -*-
+#Cristina Nieto Garcia
+
+import socket
+
+mysocket= socket.socket(socket.AF_INET , socket.SOCK_STREAM)
+mysocket.setsockopt(socket.SOL_SOCKET , socket.SO_REUSEADDR,1 )
+mysocket.bind(("localhost",7777))
+
+mysocket.listen(4)
+
+hay_num = True
+
+try:
+    while True:
+        print "Waiting for connections"
+        (recvSocket , address) = mysocket.accept()
+        url = recvSocket.recv(1024)
+        try:
+            n = int(url.split()[1][1:])
+        except ValueError:
+            print "Introduce un número"
+            recvSocket.send("HTTP/1.1 200 OK \r\n\r\n" + "<html><body><h1>Es necesario introducir un número </h1></body></html>" + "\r\n")
+            recvSocket.close()
+            continue
+
+        if hay_num : 
+            numero1 = n
+            hay_num = False
+            print "Introduce otro numero"
+            recvSocket.send("HTTP/1.1 200 OK \r\n\r\n" + "<html><body><h1>Introduce otro número</h1></body></html>" + "\r\n")
+
+        else:
+            suma = numero1 + n
+            print "La suma es...." + str(suma)
+            recvSocket.send("HTTP/1.1 200 OK \r\n\r\n" + "<html><body><h1> La suma del número " + str(numero1) + " y del número " + str(n) + " es " + str(suma) + "</h1></body></html>" + "\r\n")
+            hay_num = True
+
+        recvSocket.close()
+
+except KeyboardInterrupt:
+    print "Servidor cerrado"
+    mysocket.close()
